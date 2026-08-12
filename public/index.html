@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Surya Remind</title>
+<meta name="theme-color" content="#0a0b0f" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="/icons/icon-192.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<div id="permission-banner" class="permission-banner hidden">
+  <span>Turn on notifications so reminders reach you even when the app is closed.</span>
+  <button id="enable-notifs-btn">Enable</button>
+  <button id="dismiss-banner-btn" class="ghost" aria-label="Dismiss">✕</button>
+</div>
+
+<header class="app-header">
+  <div class="header-row">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Surya Remind</span>
+    </div>
+    <div class="status-chip" id="status-chip">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">—</span>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span id="date-label">—</span>
+    <span class="meta-sep">·</span>
+    <span id="phase-label">—</span>
+    <span class="meta-sep">·</span>
+    <span id="scenario-label">—</span>
+  </div>
+</header>
+
+<main id="view-root" class="view-root">
+  <!-- ══ TODAY ══ -->
+  <section id="view-today" class="view">
+    <div class="rail-card">
+      <div class="rail-head">
+        <div>
+          <div class="eyebrow">Right now</div>
+          <div id="now-block-time" class="now-time">--:--</div>
+        </div>
+        <div class="next-chip" id="next-chip">
+          <span class="eyebrow">Next in</span>
+          <span id="next-countdown">—</span>
+        </div>
+      </div>
+      <div id="now-block-label" class="now-label">Loading today's schedule…</div>
+    </div>
+
+    <div class="rail-wrap">
+      <div class="rail-line"></div>
+      <div class="rail-now-indicator" id="rail-now-indicator"></div>
+      <div id="rail-items" class="rail-items"></div>
+    </div>
+  </section>
+
+  <!-- ══ SCHEDULE ══ -->
+  <section id="view-schedule" class="view hidden">
+    <div class="segmented" id="schedule-day-toggle">
+      <button data-day="today" class="active">Today</button>
+      <button data-day="weekday">Weekday</button>
+      <button data-day="friday">Friday</button>
+      <button data-day="weekend">Weekend</button>
+      <button data-day="gym">Gym day</button>
+    </div>
+    <button class="legend-toggle" id="legend-toggle">Show legend ▾</button>
+    <div class="legend hidden" id="legend"></div>
+    <div id="schedule-list" class="schedule-list"></div>
+  </section>
+
+  <!-- ══ BUDGET ══ -->
+  <section id="view-budget" class="view hidden">
+    <div id="budget-sections"></div>
+    <div class="summary-card" id="budget-summary"></div>
+    <div class="section-title">Shopping list — buy now</div>
+    <div id="shopping-immediate" class="shopping-list"></div>
+    <div class="section-title">Phase 2 — buy before Sep 26</div>
+    <div id="shopping-phase2" class="shopping-list"></div>
+  </section>
+
+  <!-- ══ RULES ══ -->
+  <section id="view-rules" class="view hidden">
+    <div id="rules-sections"></div>
+  </section>
+
+  <!-- ══ SETTINGS ══ -->
+  <section id="view-settings" class="view hidden">
+    <div class="settings-card">
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Today's scenario</div>
+          <div class="settings-hint">A = exit office 4 PM · B = exit office 8 PM</div>
+        </div>
+        <div class="segmented small" id="scenario-toggle">
+          <button data-scenario="A">A</button>
+          <button data-scenario="B">B</button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Gym day (Phase 2, Scenario A only)</div>
+          <div class="settings-hint">Auto-set Mon/Wed/Fri once Phase 2 begins</div>
+        </div>
+        <span class="pill" id="gym-day-pill">—</span>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Push notifications</div>
+          <div class="settings-hint" id="notif-status-hint">Checking status…</div>
+        </div>
+        <button class="pill-btn" id="notif-toggle-btn">Enable</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Test notification</div>
+          <div class="settings-hint">Fires an instant local notification on this device</div>
+        </div>
+        <button class="pill-btn" id="test-notif-btn">Send</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-label">Phase</div>
+          <div class="settings-hint" id="phase-hint">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-footnote">
+      Reminders are sent by a script that runs every few minutes against this
+      schedule — they'll arrive even if this app is fully closed, as long as
+      notifications are enabled and you have a network connection.
+    </div>
+
+    <div class="section-title">Custom reminders</div>
+    <div id="reminders-list" class="reminders-list"></div>
+    <button class="add-reminder-btn" id="add-reminder-btn">+ Add reminder</button>
+
+    <div id="reminder-form-backdrop" class="form-backdrop hidden">
+      <div class="reminder-form">
+        <div class="form-title">New reminder</div>
+        <label class="form-label">What's it for</label>
+        <input type="text" id="rf-label" class="form-input" placeholder="e.g. Drink water" maxlength="100" />
+
+        <label class="form-label">Time</label>
+        <input type="time" id="rf-time" class="form-input" />
+
+        <label class="form-label">Repeats</label>
+        <div class="segmented" id="rf-repeat">
+          <button data-repeat="daily" class="active">Daily</button>
+          <button data-repeat="weekly">Specific days</button>
+          <button data-repeat="once">One time</button>
+        </div>
+
+        <div id="rf-days-wrap" class="day-picker hidden">
+          <button data-dow="0">S</button><button data-dow="1">M</button>
+          <button data-dow="2">T</button><button data-dow="3">W</button>
+          <button data-dow="4">T</button><button data-dow="5">F</button>
+          <button data-dow="6">S</button>
+        </div>
+
+        <input type="date" id="rf-date" class="form-input hidden" />
+
+        <div class="form-actions">
+          <button class="form-btn ghost" id="rf-cancel">Cancel</button>
+          <button class="form-btn primary" id="rf-save">Save reminder</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-view="today">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span>Today</span>
+  </button>
+  <button class="nav-btn" data-view="schedule">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 9.5h17M8 3v3M16 3v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span>Schedule</span>
+  </button>
+  <button class="nav-btn" data-view="budget">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 18V6M4 18h16M4 12h5M4 7h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span>Budget</span>
+  </button>
+  <button class="nav-btn" data-view="rules">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <span>Rules</span>
+  </button>
+  <button class="nav-btn" data-view="settings">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 13.5a7.9 7.9 0 0 0 0-3l2-1.5-2-3.4-2.3.9a8 8 0 0 0-2.6-1.5L14 2h-4l-.5 2.5a8 8 0 0 0-2.6 1.5l-2.3-.9-2 3.4L4.6 10a7.9 7.9 0 0 0 0 3l-2 1.6 2 3.4 2.3-.9c.8.7 1.7 1.2 2.6 1.5L10 22h4l.5-2.4c.9-.3 1.8-.8 2.6-1.5l2.3.9 2-3.4-2-1.6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>
