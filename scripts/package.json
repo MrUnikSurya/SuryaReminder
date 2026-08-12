@@ -1,0 +1,12 @@
+{
+  "name": "surya-remind-scheduler",
+  "private": true,
+  "description": "Free GitHub Actions cron script that sends FCM reminders — no Firebase Blaze plan required",
+  "main": "checkSchedule.js",
+  "scripts": {
+    "check": "node checkSchedule.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0"
+  }
+}

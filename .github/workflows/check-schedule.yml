@@ -1,0 +1,28 @@
+name: Check schedule and send reminders
+
+on:
+  schedule:
+    # Every 5 minutes. GitHub Actions cron is best-effort (can run a few
+    # minutes late under load) — checkSchedule.js is written to tolerate
+    # that by tracking the last run time instead of matching an exact minute.
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {} # lets you trigger a run manually from the Actions tab, for testing
+
+jobs:
+  check-schedule:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - run: node checkSchedule.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
